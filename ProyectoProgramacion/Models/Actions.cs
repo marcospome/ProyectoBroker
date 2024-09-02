@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace ProyectoProgramacion.Models
 {
@@ -27,5 +28,7 @@ namespace ProyectoProgramacion.Models
         [Required]
         [Range(0, 999.99)]
         public decimal Price { get; set; }  // PRICE
+
+        public decimal? TotalPrice { get; set; }  // PRICE
     }
 }

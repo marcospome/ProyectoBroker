@@ -57,14 +57,17 @@ namespace ProyectoProgramacion.Controllers
         monto neto de cada transacción (dada la cantidad de acciones y el
         precio) */
 
-        [HttpGet("operationsStatusExecuted")]
-        public List<Actions> GetOperationsStatusExecuted()
+        [HttpGet("operationsByStatus")]
+        public List<Actions> GetOperationsStatus(string status) // Solicito el status para filtrar.
         {
-            List<Actions> allActions = GetAllActions().ToList(); // Hago una lista con el metodo anterior que me trae todos los datos.
-
-            List<Actions> filteredActions = allActions
-            .Where(a => a.Status == "EXECUTED") // LINQ
-            .ToList();
+            List<Actions> filteredActions = GetAllActions() // Metodo GetAllActions. (Sería como un select * from a los resultados qué me trae y luego filtro con el where de abajo)
+                .Where(a => a.Status == status) // LINQ
+                .Select(a =>
+                {
+                    a.TotalPrice = a.Quantity * a.Price; // Calculo el TotalPrice haciendo Quantity * Price
+                    return a;
+                })
+                .ToList(); // Hago una lista con el metodo anterior que me trae todos los datos.
 
             return filteredActions;
         }
@@ -72,21 +75,19 @@ namespace ProyectoProgramacion.Controllers
         // Recuperar todos los datos de las órdenes para un año específico.
 
         [HttpGet("operationsByYear")]
-        public List<Actions> GetOperationsByYear(int year)
+        public List<Actions> GetOperationsByYear(int year) // Solicito el año para filtrar.
         {
-            List<Actions> allActions = GetAllActions().ToList(); // Hago una lista con el metodo anterior que me trae todos los datos.
 
-            List<Actions> filteredActions = allActions
-            .Where(a => a.OrderDate.Year == year) // LINQ
+            List<Actions> filteredActions = GetAllActions()
+            .Where(a => a.OrderDate.Year == year) // Filtro con el where por el año solicitado.
             .ToList();
-
 
             return filteredActions;
         }
 
 
         [HttpPost("orderCreate")]
-        public void CreateOrder([FromBody] Actions a)  // si pongo List<Action> puedo enviar varios elementos en un solo json.
+        public void CreateOrder([FromBody] Actions a)  
         {
             using (SqlConnection connection = new(con))
             {
@@ -110,7 +111,7 @@ namespace ProyectoProgramacion.Controllers
         estado “PENDING”. */
 
         [HttpPost("orderCreatePending")]
-        public void CreateOrderPending([FromBody] Actions a)  // si pongo List<Action> puedo enviar varios elementos en un solo json.
+        public void CreateOrderPending([FromBody] Actions a)  
         {
             using (SqlConnection connection = new(con))
             {
@@ -132,7 +133,7 @@ namespace ProyectoProgramacion.Controllers
 
 
         [HttpPut("orderEdit/{id}")]
-        public void EditOrder([FromBody] Actions a, int id)  // si pongo List<Action> puedo enviar varios elementos en un solo json.
+        public void EditOrder([FromBody] Actions a, int id)  
         {
             using (SqlConnection connection = new(con))
             {
@@ -154,9 +155,8 @@ namespace ProyectoProgramacion.Controllers
         }
 
 
-
         [HttpDelete("orderDelete/{id}")]
-        public void DeleteOrder(int id)  // si pongo List<Action> puedo enviar varios elementos en un solo json.
+        public void DeleteOrder(int id)  
         {
             using (SqlConnection connection = new(con))
             {
